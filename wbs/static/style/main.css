@@ -7,14 +7,11 @@ body {
     margin: auto;
     display: grid;
     grid-template-rows: 700px 100px;
+    justify-items: center;
 }
 
 #captured_video {
     width: 98%;
     height: 98%;
     border: 1px solid #999;
-}
-
-#video_content_btns {
-    justify-self: center;
 }
