@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Web Broadcaster Software</title>
+    <!-- Load Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link href="style/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
@@ -11,8 +13,8 @@
         <video id="captured_video" autoplay></video>
 
         <div id="video_content_btns">
-            <button id="select_app_btn">Capture Application</button>
-            <button id="stop_app_btn">Stop</button>
+            <button id="select_app_btn" class="btn btn-primary btn-sm">Capture Application</button>
+            <button id="stop_app_btn" class="btn btn-secondary btn-sm" disabled>Stop</button>
         </div>
     </div>
 

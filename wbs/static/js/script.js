@@ -14,6 +14,7 @@
         $('#select_app_btn').click(async function() {
             try {
                 capturedVideoElmt.srcObject = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+                $('#stop_app_btn').prop('disabled', false);
             } catch(err) {
                 console.error("Error: " + err);
             }
@@ -24,6 +25,7 @@
 
             tracks.forEach(track => track.stop());
             capturedVideoElmt.srcObject = null;
+            $('#stop_app_btn').prop('disabled', true);
         });
     }
 }());
