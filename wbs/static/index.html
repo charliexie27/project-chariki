@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="js/api.js"></script>
+    <script src="js/redirect_to_signin.js"></script>
     <meta charset="UTF-8">
     <title>Web Broadcaster Software</title>
     <!-- Load Bootstrap -->
@@ -8,6 +10,11 @@
     <link href="style/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
+    <nav class="navbar navbar-dark bg-dark" id="top-nav">
+        <a class="navbar-brand" href="/">
+            Web Broadcaster Software
+        </a>
+    </nav>
 
     <div id="video_content">
         <video id="captured_video" autoplay></video>
@@ -15,6 +22,7 @@
         <div id="video_content_btns">
             <button id="select_app_btn" class="btn btn-primary btn-sm">Capture Application</button>
             <button id="stop_app_btn" class="btn btn-secondary btn-sm" disabled>Stop</button>
+            <button id="go_live_btn" class="btn btn-danger btn-sm" disabled>Go Live</button>
         </div>
     </div>
 

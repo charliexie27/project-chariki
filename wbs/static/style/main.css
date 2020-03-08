@@ -1,10 +1,15 @@
 body {
     font-family: Arial, Helvetica, sans-serif;
+    background-color: #171717;
+}
+
+#top-nav {
+    background-color: #0a0a0a !important;
 }
 
 #video_content {
     max-width: 1000px;
-    margin: auto;
+    margin: 20px auto auto auto;
     display: grid;
     grid-template-rows: 700px 100px;
     justify-items: center;
@@ -13,5 +18,5 @@ body {
 #captured_video {
     width: 98%;
     height: 98%;
-    border: 1px solid #999;
+    background-color: #333333;
 }

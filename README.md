@@ -42,3 +42,17 @@ WBS is an application that allows you to stream a live video feed to a streaming
 - Encoding video can be taxing on both the device and the server and can result in lower FPS so finding the correct bitrate/encoding preset will be a challenge.
 
 - Dealing with the video feeds from these multiple APIs (camera/microphone, images, text on-screen applications, etc.) and mixing them together into a single video feed will be a challenge.
+
+## Beta Installation Instructions
+
+1. Download FFmpeg from https://www.ffmpeg.org/download.html. If you're on Windows, extract the zip file, then add the bin folder to your PATH in environment variables. To test that it's installed correctly, just type 'ffmpeg' in the command line and see if the command is recognized.
+
+2. Install MongoDB using the instructions in https://www.freecodecamp.org/news/learn-mongodb-a4ce205e7739/. Same as step 1, if you're on Windows, add the bin folder to your PATH in environment variables.
+
+3. Run `npm install` in the wbs folder of this repository.
+
+4. In the script.js, replace YOUR_STREAM_KEY_HERE with your twitch stream key (Currently line 41). 
+
+5. Start the local MongoDB server by running `mongod` in the command line.
+
+6. Using another command line, start the app with `node app.js`. Access it in localhost:3000.
