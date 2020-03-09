@@ -10,10 +10,21 @@
     <link href="style/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark" id="top-nav">
-        <a class="navbar-brand" href="/">
-            Web Broadcaster Software
-        </a>
+    <nav class="navbar navbar-expand-sm navbar-dark bg-dark" id="top-nav">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/">Web Broadcaster Software</a>
+        </div>
+        <ul class="nav navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="username-text" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="#">Account Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="/signout/">Sign out</a>
+                </div>
+            </li>
+        </ul>
     </nav>
 
     <div id="video_content">
@@ -27,6 +38,7 @@
     </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="js/script.js"></script>
 </body>
 </html>

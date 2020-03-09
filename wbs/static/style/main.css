@@ -20,3 +20,11 @@ body {
     height: 98%;
     background-color: #333333;
 }
+
+.dropdown-menu{
+    background-color: #0a0a0a;
+}
+
+.dropdown-item{
+    color: white;
+}

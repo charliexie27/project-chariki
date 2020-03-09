@@ -9,6 +9,11 @@
     };
 
     window.onload = function(){
+        let currentUser = api.getUsername();
+        if (currentUser !== null || currentUser !== '' ) {
+            $('#username-text').html(currentUser);
+        }
+
         const capturedVideoElmt = document.getElementById('captured_video');
 
         $('#select_app_btn').click(async function() {
