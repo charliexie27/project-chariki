@@ -11,7 +11,7 @@
     window.onload = function(){
         let currentUser = api.getUsername();
         if (currentUser !== null || currentUser !== '' ) {
-            $('#username-text').html(currentUser);
+            $('#username-text').html('<span class="fa fa-user"></span>' + currentUser);
         }
 
         const capturedVideoElmt = document.getElementById('captured_video');

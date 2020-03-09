@@ -28,3 +28,7 @@ body {
 .dropdown-item{
     color: white;
 }
+
+.fa-user{
+    margin-right: 7px;
+}
