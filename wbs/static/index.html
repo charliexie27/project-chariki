@@ -59,13 +59,18 @@
         </div>
     </div>
 
-    <div id="video_content">
-        <video id="captured_video" autoplay></video>
+    <div id="main-content">
+        <div id="video_content">
+            <video id="captured_video" autoplay></video>
+            <div id="video-overlay" class="offline">
+                OFFLINE
+            </div>
+        </div>
 
         <div id="video_content_btns">
             <button id="select_app_btn" class="btn btn-primary btn-sm">Capture Application</button>
-            <button id="stop_app_btn" class="btn btn-secondary btn-sm" disabled>Stop</button>
             <button id="go_live_btn" class="btn btn-danger btn-sm" disabled>Go Live</button>
+            <button id="stop_live_btn" class="btn btn-secondary btn-sm" disabled>Stop</button>
         </div>
     </div>
 
