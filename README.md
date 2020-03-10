@@ -51,9 +51,9 @@ WBS is an application that allows you to stream a live video feed to a streaming
 
 3. Run `npm install` in the wbs folder of this repository.
 
-4. Start the local MongoDB server by running `mongod` in the command line.
+4. Generate a secret key and a public certificate for HTTPS by running `openssl req -x509 -nodes -newkey rsa:4096 -keyout server.key -out server.crt` in the wbs folder of this repository.
 
-5. Generate a secret key and a public certificate for HTTPS by running `openssl req -x509 -nodes -newkey rsa:4096 -keyout server.key -out server.crt` in the wbs folder of this repository.
+5. Start the local MongoDB server by running `mongod` in the command line.
 
 6. Using another command line, start the app with `node app.js`. Access it in https://localhost:3000.
 
