@@ -57,4 +57,4 @@ WBS is an application that allows you to stream a live video feed to a streaming
 
 6. Using another command line, start the app with `node app.js`. Access it in https://localhost:3000.
 
-7. Sign in, then hover over your username in the top right and click Account Settings to save your stream key.
+7. Sign in, then hover over your username in the top right and click Account Settings to save your stream key. If certain features don't work, try using Google Chrome. If it still doesn't work, then it's a bug.
