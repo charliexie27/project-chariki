@@ -1,7 +1,8 @@
 const express = require('express');
-const app = express();
+const fs = require('fs');
 const child_process = require('child_process');
 const WebSocketServer = require('ws').Server;
+const app = express();
 
 let User = require('./models/users');
 let UserSettings = require('./models/user_settings');
@@ -20,12 +21,20 @@ let bodyParser = require('body-parser');
 app.use(bodyParser.json());
 
 const cookie = require('cookie');
+const cookieParser = require('cookie-parser');
 
 const session = require('express-session');
+const MemoryStore = require('memorystore')(session);
+const secret = 'ekdIVty7KtoWu92wKodT';
+const store = new MemoryStore({
+    checkPeriod: 86400000 // prune expired entries every 24h
+});
 app.use(session({
-    secret: 'P3hg4h1qp5',
+    secret: secret,
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    store: store,
+    cookie: {httpOnly: true, secure: true, sameSite: true}
 }));
 
 app.use(function(req, res, next){
@@ -33,7 +42,9 @@ app.use(function(req, res, next){
     let username = (req.user)? req.user._id : '';
     res.setHeader('Set-Cookie', cookie.serialize('username', username, {
         path : '/',
-        maxAge: 60 * 60 * 24 * 7 // 1 week in number of seconds
+        maxAge: 60 * 60 * 24 * 7, // 1 week in number of seconds
+        secure: true,
+        sameSite: true
     }));
     next();
 });
@@ -44,6 +55,44 @@ app.use(function (req, res, next){
     console.log("HTTP request", req.method, req.url, req.body);
     next();
 });
+
+let isAuthenticated = function(req, res, next) {
+    if (!req.user) return res.status(401).end("access denied");
+    next();
+};
+
+const crypto = require('crypto');
+const algorithm = 'aes-256-cbc';
+const ivLength = 16;
+const encryptionKey = 'RheOGbv77XZBhIaXr86sLRzC8jWKumPQ';
+
+let encryptStreamKey = function(streamKey) {
+    if (streamKey.length === 0){
+        return '';
+    }
+    let iv = crypto.randomBytes(ivLength);
+    let cipher = crypto.createCipheriv(algorithm, Buffer.from(encryptionKey), iv);
+    let encrypted = cipher.update(streamKey);
+
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+
+    return iv.toString('hex') + ':' + encrypted.toString('hex');
+};
+
+let decryptStreamKey = function(encryptedStreamKey) {
+    if (encryptedStreamKey.length === 0){
+        return '';
+    }
+    let streamKeyParts = encryptedStreamKey.split(':');
+    let iv = Buffer.from(streamKeyParts.shift(), 'hex');
+    let encryptedText = Buffer.from(streamKeyParts.join(':'), 'hex');
+    let decipher = crypto.createDecipheriv(algorithm, Buffer.from(encryptionKey), iv);
+    let decrypted = decipher.update(encryptedText);
+
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+
+    return decrypted.toString();
+};
 
 // curl -H "Content-Type: application/json" -X POST -d '{"username":"alice","password":"alice"}' -c cookie.txt localhost:3000/signup/
 app.post('/signup/', function (req, res, next) {
@@ -58,17 +107,26 @@ app.post('/signup/', function (req, res, next) {
             _id: req.body.username,
             password: req.body.password
         });
+        let newUserSettings = new UserSettings({
+           _id: req.body.username,
+           streamKey: ''
+        });
         newUser.save(function(err){
             if (err) return res.status(500).end(err);
-            User.findOne({_id: req.body.username}, function(err, user){
+            newUserSettings.save(function(err){
                 if (err) return res.status(500).end(err);
-                // start a session
-                req.session.user = user;
-                res.setHeader('Set-Cookie', cookie.serialize('username', user._id, {
-                    path : '/',
-                    maxAge: 60 * 60 * 24 * 7 // 1 week in number of seconds
-                }));
-                return res.json("user " + user._id + " signed up");
+                User.findOne({_id: req.body.username}, function(err, user){
+                    if (err) return res.status(500).end(err);
+                    // start a session
+                    req.session.user = user;
+                    res.setHeader('Set-Cookie', cookie.serialize('username', user._id, {
+                        path : '/',
+                        maxAge: 60 * 60 * 24 * 7, // 1 week in number of seconds
+                        secure: true,
+                        sameSite: true
+                    }));
+                    return res.json("user " + user._id + " signed up");
+                });
             });
         });
     });
@@ -92,7 +150,9 @@ app.post('/signin/', function (req, res, next) {
             req.session.user = user;
             res.setHeader('Set-Cookie', cookie.serialize('username', user._id, {
                 path : '/',
-                maxAge: 60 * 60 * 24 * 7 // 1 week in number of seconds
+                maxAge: 60 * 60 * 24 * 7, // 1 week in number of seconds
+                secure: true,
+                sameSite: true
             }));
             return res.json("user " + req.body.username + " signed in");
         });
@@ -104,17 +164,45 @@ app.get('/signout/', function (req, res, next) {
     req.session.destroy();
     res.setHeader('Set-Cookie', cookie.serialize('username', '', {
         path : '/',
-        maxAge: 60 * 60 * 24 * 7 // 1 week in number of seconds
+        maxAge: 60 * 60 * 24 * 7, // 1 week in number of seconds
+        secure: true,
+        sameSite: true
     }));
     res.redirect('/');
 });
 
-const http = require('http');
+// USER SETTINGS
+app.post('/settings/', isAuthenticated, function (req, res, next) {
+    // extract data from HTTP request
+    if (!('streamKey' in req.body)) return res.status(400).end('stream key is missing');
+    UserSettings.updateOne({_id: req.user._id}, { streamKey: encryptStreamKey(req.body.streamKey) }, { upsert: true }, function(err, count){
+        if (err) return res.status(500).end(err);
+        return res.json("User settings updated successfully.");
+    });
+});
+
+app.get('/settings/', isAuthenticated, function(req, res, next) {
+    UserSettings.findOne({_id: req.user._id}, function(err, userSettings){
+        if (err) return res.status(500).end(err);
+        if (!userSettings) return res.status(404).end('User settings not found.');
+        userSettings.streamKey = decryptStreamKey(userSettings.streamKey);
+        return res.json(userSettings);
+    });
+});
+
+const https = require('https');
 const PORT = 3000;
 
-const server = http.createServer(app).listen(PORT, function (err) {
+let privateKey = fs.readFileSync( 'server.key' );
+let certificate = fs.readFileSync( 'server.crt' );
+let config = {
+    key: privateKey,
+    cert: certificate
+};
+
+const server = https.createServer(config, app).listen(PORT, function (err) {
     if (err) console.log(err);
-    else console.log("HTTP server on http://localhost:%s", PORT);
+    else console.log("HTTPS server on https://localhost:%s", PORT);
 });
 
 const wss = new WebSocketServer({
@@ -132,69 +220,101 @@ wss.on('connection', (ws, req) => {
         return;
     }
 
-    const rtmpUrl = decodeURIComponent(match[1]);
-    console.log('Starting stream on RTMP URL:', rtmpUrl);
+    ws.upgradeReq = req;
+    //get sessionID
+    let cookies = cookie.parse(ws.upgradeReq.headers.cookie);
+    let sid = cookieParser.signedCookie(cookies["connect.sid"], secret);
+    //get the session object
+    store.get(sid, function (err, ss) {
+        //create the session object and append on upgradeReq
+        store.createSession(ws.upgradeReq, ss);
 
-    const ffmpeg = child_process.spawn('ffmpeg', [
-        // FFmpeg will read input video from STDIN
-        '-i', '-',
+        if (!ws.upgradeReq.session.user){
+            console.log('Access denied.');
+            ws.terminate();
+            return;
+        }
 
-        '-s', '1280x720',
+        // retrieve user from the database
+        UserSettings.findOne({_id: ws.upgradeReq.session.user._id}, function(err, userSettings){
+            if (err){
+                console.log('An error occured while retrieve user settings from the database: ' + err);
+                ws.terminate();
+                return;
+            }
 
-        '-framerate', '30',
+            if (!userSettings || !userSettings.streamKey || userSettings.streamKey === ''){
+                console.log('User settings stream key not found.');
+                ws.terminate();
+                return;
+            }
 
-        '-b:v', '3000k',
+            const rtmpUrl = decodeURIComponent(match[1]).replace('$STREAM_KEY$', decryptStreamKey(userSettings.streamKey));
+            console.log('Starting stream on RTMP URL:', rtmpUrl);
 
-        '-minrate', '3000k',
+            const ffmpeg = child_process.spawn('ffmpeg', [
+                '-y',
+                // FFmpeg will read input video from STDIN
+                '-i', '-',
 
-        '-maxrate', '3000k',
+                '-s', '1280x720',
 
-        // or libx264
-        '-c:v', 'copy',
+                '-framerate', '30',
 
-        '-preset', 'ultrafast',
+                '-b:v', '3000k',
 
-        '-threads', '0',
+                '-minrate', '3000k',
 
-        '-pix_fmt', 'yuv420p',
+                '-maxrate', '3000k',
 
-        '-f', 'flv',
+                // or libx264
+                '-c:v', 'copy',
 
-        rtmpUrl
-    ]);
+                '-preset', 'ultrafast',
 
-    // If FFmpeg stops for any reason, close the WebSocket connection.
-    ffmpeg.on('end', (code, signal) => {
-        console.log('FFmpeg child process closed, code ' + code + ', signal ' + signal);
-        ws.terminate();
-    });
+                '-threads', '0',
 
-    // If FFmpeg stops for any reason, close the WebSocket connection.
-    ffmpeg.on('close', (code, signal) => {
-        console.log('FFmpeg child process closed, code ' + code + ', signal ' + signal);
-        ws.terminate();
-    });
+                '-pix_fmt', 'yuv420p',
 
-    // Handle STDIN pipe errors by logging to the console.
-    // These errors most commonly occur when FFmpeg closes and there is still
-    // data to write.  If left unhandled, the server will crash.
-    ffmpeg.stdin.on('error', (e) => {
-        console.log('FFmpeg STDIN Error', e);
-    });
+                '-f', 'flv',
 
-    // FFmpeg outputs all of its messages to STDERR.  Let's log them to the console.
-    ffmpeg.stderr.on('data', (data) => {
-        console.log(data.toString());
-    });
+                rtmpUrl
+            ]);
 
-    // When data comes in from the WebSocket, write it to FFmpeg's STDIN.
-    ws.on('message', (msg) => {
-        console.log('DATA', msg);
-        ffmpeg.stdin.write(msg);
-    });
+            // If FFmpeg stops for any reason, close the WebSocket connection.
+            ffmpeg.on('end', (code, signal) => {
+                console.log('FFmpeg child process closed, code ' + code + ', signal ' + signal);
+                ws.terminate();
+            });
 
-    // If the client disconnects, stop FFmpeg.
-    ws.on('close', (e) => {
-        ffmpeg.kill('SIGINT');
+            // If FFmpeg stops for any reason, close the WebSocket connection.
+            ffmpeg.on('close', (code, signal) => {
+                console.log('FFmpeg child process closed, code ' + code + ', signal ' + signal);
+                ws.terminate();
+            });
+
+            // Handle STDIN pipe errors by logging to the console.
+            // These errors most commonly occur when FFmpeg closes and there is still
+            // data to write.  If left unhandled, the server will crash.
+            ffmpeg.stdin.on('error', (e) => {
+                console.log('FFmpeg STDIN Error', e);
+            });
+
+            // FFmpeg outputs all of its messages to STDERR.  Let's log them to the console.
+            ffmpeg.stderr.on('data', (data) => {
+                console.log(data.toString());
+            });
+
+            // When data comes in from the WebSocket, write it to FFmpeg's STDIN.
+            ws.on('message', (msg) => {
+                console.log('DATA', msg);
+                ffmpeg.stdin.write(msg);
+            });
+
+            // If the client disconnects, stop FFmpeg.
+            ws.on('close', (e) => {
+                ffmpeg.kill('SIGINT');
+            });
+        });
     });
 });

@@ -29,6 +29,29 @@ body {
     color: white;
 }
 
+.dropdown-item.active, .dropdown-item:active {
+    color: #0a0a0a;
+    background-color: white;
+}
+
 .fa-user{
     margin-right: 7px;
+}
+
+#stream-key{
+    width: 500px;
+}
+
+#stream-key-label{
+    margin-bottom: 0;
+    margin-right: 10px;
+}
+
+#view-stream-key{
+    margin-left: 7px;
+    margin-top: 6px;
+}
+
+#view-stream-key:hover{
+    color: gray;
 }

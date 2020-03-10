@@ -43,10 +43,10 @@
             let mediaStream;
 
             const ws = new WebSocket(
-                window.location.protocol.replace('http', 'ws') + '//' + // http: => ws:, https: -> wss:
+                window.location.protocol.replace('https', 'wss') + '//' + // http: => ws:, https: -> wss:
                 window.location.host +
                 '/rtmp/' +
-                encodeURIComponent("rtmp://live-yto.twitch.tv/app/YOUR_STREAM_KEY_HERE")
+                encodeURIComponent("rtmp://live-yto.twitch.tv/app/$STREAM_KEY$")
             );
 
             ws.addEventListener('open', (e) => {
@@ -68,6 +68,33 @@
             ws.addEventListener('close', (e) => {
                 mediaRecorder.stop();
             });
+        });
+
+        $('#settings-btn').click(function() {
+            api.getSettings(function(err, res){
+                $('#stream-key').val(res.streamKey);
+                $('#settings-modal').modal('show');
+            });
+        });
+
+        $('#submit-settings-btn').click(function(){
+            api.updateSettings({streamKey: $('#stream-key').val()}, function(err, res) {
+            });
+        });
+
+        $('#view-stream-key').click(function(){
+            let streamKeyElmt = $('#stream-key');
+            let eyeElmt = $('#view-stream-key');
+            if (streamKeyElmt.attr('type') === 'text'){
+                streamKeyElmt.attr('type', 'password');
+                eyeElmt.removeClass('fa-eye-slash');
+                eyeElmt.addClass('fa-eye');
+            }
+            else if (streamKeyElmt.attr('type') === 'password'){
+                streamKeyElmt.attr('type', 'text');
+                eyeElmt.removeClass('fa-eye');
+                eyeElmt.addClass('fa-eye-slash');
+            }
         });
     }
 }());

@@ -51,8 +51,10 @@ WBS is an application that allows you to stream a live video feed to a streaming
 
 3. Run `npm install` in the wbs folder of this repository.
 
-4. In the script.js, replace YOUR_STREAM_KEY_HERE with your twitch stream key (Currently line 41). 
+4. Start the local MongoDB server by running `mongod` in the command line.
 
-5. Start the local MongoDB server by running `mongod` in the command line.
+5. Generate a secret key and a public certificate for HTTPS by running `openssl req -x509 -nodes -newkey rsa:4096 -keyout server.key -out server.crt` in the wbs folder of this repository.
 
-6. Using another command line, start the app with `node app.js`. Access it in localhost:3000.
+6. Using another command line, start the app with `node app.js`. Access it in https://localhost:3000.
+
+7. Sign in, then hover over your username in the top right and click Account Settings to save your stream key.

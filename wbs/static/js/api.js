@@ -33,6 +33,14 @@ let api = (function(){
         });
     };
 
+    module.updateSettings = function(settings, callback){
+        send("POST", "/settings/", settings, callback);
+    };
+
+    module.getSettings = function(callback){
+        send("GET", "/settings/", null, callback);
+    };
+
     let userListeners = [];
 
     function notifyUserListeners(username){

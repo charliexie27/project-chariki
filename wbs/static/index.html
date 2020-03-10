@@ -20,13 +20,44 @@
                 <a class="nav-link dropdown-toggle" id="username-text" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 </a>
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item" href="#">Account Settings</a>
+                    <a class="dropdown-item" href="#" id="settings-btn">Account Settings</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="/signout/">Sign out</a>
+                    <a class="dropdown-item" href="/signout/">Sign Out</a>
                 </div>
             </li>
         </ul>
     </nav>
+
+    <!-- The Modal -->
+    <div class="modal fade" id="settings-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h4 class="modal-title">Account Settings</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <!--Body-->
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <label data-error="wrong" for="stream-key" id="stream-key-label">Stream Key:</label>
+                            <input type="password" id="stream-key" name="stream-key">
+                            <i id="view-stream-key" class="fa fa-eye fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal footer -->
+                <div class="modal-footer">
+                    <input type="button" id="submit-settings-btn" class="btn btn-primary" value="Save" data-dismiss="modal"/>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
     <div id="video_content">
         <video id="captured_video" autoplay></video>
