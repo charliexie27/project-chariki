@@ -5,3 +5,7 @@ Thumbs.db
 # node.js
 node_modules
 *-lock.json
+
+# certificates
+server.crt
+server.key

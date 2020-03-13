@@ -45,16 +45,16 @@ WBS is an application that allows you to stream a live video feed to a streaming
 
 ## Beta Installation Instructions
 
-1. Download FFmpeg from https://www.ffmpeg.org/download.html. If you're on Windows, extract the zip file, then add the bin folder to your PATH in environment variables. To test that it's installed correctly, just type 'ffmpeg' in the command line and see if the command is recognized.
+1. Download FFmpeg from <https://www.ffmpeg.org/download.html>. If you're on Windows, extract the zip file, then add the bin folder to your PATH in environment variables. To test that it's installed correctly, just type 'ffmpeg' in the command line and see if the command is recognized. For Mac users, the simplest way is to install it through homebrew with `brew install ffmpeg`.
 
-2. Install MongoDB using the instructions in https://www.freecodecamp.org/news/learn-mongodb-a4ce205e7739/. Same as step 1, if you're on Windows, add the bin folder to your PATH in environment variables.
+2. Install MongoDB using the instructions in <https://www.freecodecamp.org/news/learn-mongodb-a4ce205e7739/>. Same as step 1, if you're on Windows, add the bin folder to your PATH in environment variables. For Mac users, the simplest way is (again) to install it through homebrew. First tap the Mongodb homebrew tap with `brew tap mongodb/brew` then install with `brew install mongodb-community@4.2`.
 
 3. Run `npm install` in the wbs folder of this repository.
 
 4. Generate a secret key and a public certificate for HTTPS by running `openssl req -x509 -nodes -newkey rsa:4096 -keyout server.key -out server.crt` in the wbs folder of this repository.
 
-5. Start the local MongoDB server by running `mongod` in the command line.
+5. Start the local MongoDB server by running `mongod` in the command line. For Mac users who've installed MongoDB with homebrew, start the database server with `mongod --dbpath /usr/local/var/mongodb`. The path of the database must be specified or the default `/data/db` will be used and will cause an error.
 
-6. Using another command line, start the app with `node app.js`. Access it in https://localhost:3000.
+6. Using another command line, start the app with `node app.js`. Access it in <https://localhost:3000>.
 
 7. Sign in, then hover over your username in the top right and click Account Settings to save your stream key. If certain features don't work, try using Google Chrome. If it still doesn't work, then it's a bug.
