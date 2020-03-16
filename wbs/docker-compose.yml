@@ -1,27 +1,54 @@
-version: '3'
-
+version: '3.7'
 services:
+    # wbs-proxy:
+    #     container_name: wbs-proxy
+    #     image: jwilder/nginx-proxy:alpine
+    #     volumes:
+    #         - certs:/etc/nginx/certs
+    #         - /var/run/docker.sock:/tmp/docker.sock:ro
+    #     ports:
+    #         - 80:80
+    #         - 443:443
+
+    # letsencrypt:
+    #     container_name: wbs-proxy-letsencrypt
+    #     image: jrcs/letsencrypt-nginx-proxy-companion
+    #     volumes:
+    #       - certs:/etc/nginx/certs
+    #       - /var/run/docker.sock:/tmp/docker.sock:ro
+    #       - /var/run/docker.sock:/var/run/docker.sock:ro
+    #     environment:
+    #       - NGINX_PROXY_CONTAINER=wbs-proxy
+
     wbs-backend:
-        image: diefou/wbs:beta
-        # build: .
+        build: .
         ports:
             - "3000:3000"
         links:
             - wbs-mongo
         volumes:
             - .:/usr/src/app
-            - /usr/src/app/node_modules
+            - node_modules:/usr/src/app/node_modules
         depends_on:
             - wbs-mongo
+        networks:
+            - app-network 
        
     wbs-mongo:
         image: mongo
         ports:
             - "27017:27017"
+        expose:
+            - 27017
         volumes:
-            - ./data:/data/db
+            - data:/data/db
+        networks:
+            - app-network 
 
 networks:
-    channel:
+    app-network:
         driver: bridge
-    
+
+volumes:
+    data:
+    node_modules:
