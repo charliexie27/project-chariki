@@ -8,7 +8,7 @@ let User = require('./models/users');
 let UserSettings = require('./models/user_settings');
 
 let mongoose = require('mongoose');
-let mongoDb = 'mongodb://localhost:27017/wbs_db';
+let mongoDb = 'mongodb://wbs-mongo/wbs_db';
 mongoose.connect(mongoDb, {
     useNewUrlParser: true,
     useUnifiedTopology: true

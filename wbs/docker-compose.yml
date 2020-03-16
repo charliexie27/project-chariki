@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+    wbs-backend:
+        image: diefou/wbs:beta
+        # build: .
+        ports:
+            - "3000:3000"
+        links:
+            - wbs-mongo
+        volumes:
+            - .:/usr/src/app
+            - /usr/src/app/node_modules
+        depends_on:
+            - wbs-mongo
+       
+    wbs-mongo:
+        image: mongo
+        ports:
+            - "27017:27017"
+        volumes:
+            - ./data:/data/db
+
+networks:
+    channel:
+        driver: bridge
+    

@@ -1,0 +1,10 @@
+# Default stuff
+node_modules
+npm-debug.log
+
+# Other stuff
+data
+
+# certificates
+server.crt
+server.key

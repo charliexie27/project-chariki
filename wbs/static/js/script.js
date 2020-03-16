@@ -129,5 +129,5 @@
                 eyeElmt.addClass('fa-eye-slash');
             }
         });
-    }
+    };
 }());

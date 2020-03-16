@@ -9,3 +9,6 @@ node_modules
 # certificates
 server.crt
 server.key
+
+# Other things
+data
