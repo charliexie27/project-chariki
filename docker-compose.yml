@@ -21,13 +21,13 @@ services:
     #       - NGINX_PROXY_CONTAINER=wbs-proxy
 
     wbs-backend:
-        build: .
+        build: wbs/.
         ports:
             - "3000:3000"
         links:
             - wbs-mongo
         volumes:
-            - .:/usr/src/app
+            - .:/usr/src/app/wbs
             - node_modules:/usr/src/app/node_modules
         depends_on:
             - wbs-mongo

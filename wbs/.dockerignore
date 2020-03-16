@@ -5,6 +5,6 @@ npm-debug.log
 # Other stuff
 data
 
-# certificates
-server.crt
-server.key
+# certificates (will be removed later)
+# server.crt
+# server.key
