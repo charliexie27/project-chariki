@@ -23,12 +23,14 @@ let api = (function(){
 
     module.signup = function(username, password){
         send("POST", "/signup/", {username, password}, function(err, res){
+            if (err) return notifyErrorListeners(err);
             notifyUserListeners(api.getUsername());
         });
     };
 
     module.signin = function(username, password){
         send("POST", "/signin/", {username, password}, function(err, res){
+            if (err) return notifyErrorListeners(err);
             notifyUserListeners(api.getUsername());
         });
     };
@@ -42,6 +44,7 @@ let api = (function(){
     };
 
     let userListeners = [];
+    let errorListeners = [];
 
     function notifyUserListeners(username){
         userListeners.forEach(function(listener){
@@ -49,9 +52,20 @@ let api = (function(){
         });
     }
 
+    function notifyErrorListeners(err){
+        errorListeners.forEach(function(listener){
+            listener(err);
+        });
+    }
+
+
     module.onUserUpdate = function(listener){
         userListeners.push(listener);
         listener(api.getUsername());
+    };
+
+    module.onError = function(handler){
+        errorListeners.push(handler);
     };
 
     return module;

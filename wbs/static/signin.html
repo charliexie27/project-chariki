@@ -16,6 +16,11 @@
     </nav>
 
     <div id="signin-div">
+        <div id="incorrect-signin-error" class="alert alert-danger alert-dismissible collapse" role="alert">
+            <a href="#" id="signin-close-error" class="close">&times;</a>
+            <span class="signin-error-text"></span>
+        </div>
+
         <span id="signin-text">Sign In or Create a New Account to Use WBS</span>
         <form id="signin-form">
             <div class="form-group">
@@ -33,6 +38,7 @@
     </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="js/signin.js"></script>
     <script src="js/api.js"></script>
 </body>
