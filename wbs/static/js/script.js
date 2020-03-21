@@ -1,13 +1,6 @@
 (function () {
     "use strict";
 
-    let displayMediaOptions = {
-        video: {
-            cursor: "always"
-        },
-        audio: false
-    };
-
     window.onload = function(){
         let currentUser = api.getUsername();
         if (currentUser !== null || currentUser !== '' ) {
@@ -15,12 +8,29 @@
         }
 
         const capturedVideoElmt = document.getElementById('captured_video');
+        let videoStream;
 
-        $('#select_app_btn').click(async function() {
+        $('#select_app_btn').click(function() {
             try {
-                capturedVideoElmt.srcObject = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
-                $('#stop_app_btn').prop('disabled', false);
-                $('#go_live_btn').prop('disabled', false);
+                api.getSettings(async function(err, res){
+                    let displayMediaOptions = {
+                        video: true,
+                        audio: true
+                    };
+
+                    if (res.resolution){
+                        let widthHeight = res.resolution.split('x');
+                        displayMediaOptions.video = {
+                            width: widthHeight[0],
+                            height: widthHeight[1]
+                        }
+                    }
+
+                    videoStream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+                    capturedVideoElmt.srcObject = videoStream;
+                    $('#stop_app_btn').prop('disabled', false);
+                    $('#go_live_btn').prop('disabled', false);
+                });
             } catch(err) {
                 console.error("Error: " + err);
             }
@@ -40,7 +50,6 @@
          */
         $('#go_live_btn').click(function() {
             let mediaRecorder;
-            let mediaStream;
 
             let ws = new WebSocket(
                 window.location.protocol.replace('https', 'wss') + '//' + // http: => ws:, https: -> wss:
@@ -60,20 +69,68 @@
             $('#video-overlay').removeClass('offline');
             $('#video-overlay').text('LIVE');
 
+            $('#mic-volume').prop('disabled', true);
+
             ws.addEventListener('open', (e) => {
-                mediaStream = capturedVideoElmt.captureStream();
-                mediaRecorder = new MediaRecorder(mediaStream, {
-                    mimeType: 'video/webm;codecs=h264',
-                    videoBitsPerSecond : 3000000
-                });
+                let mediaStream = videoStream.clone();
 
-                mediaRecorder.addEventListener('dataavailable', (e) => {
-                    ws.send(e.data);
-                });
+                if ($('#mic-btn').hasClass('fa-microphone')){
+                    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+                        .then(function(stream) {
+                            if (videoStream.getAudioTracks().length !== 0){
+                                let newMediaStream = mergeAudioStreams(videoStream, stream);
+                                newMediaStream.addTrack(videoStream.getVideoTracks()[0]);
+                                mediaStream = newMediaStream.clone();
+                            }
+                            else{
+                                mediaStream.addTrack(adjustVolume(stream, '#mic-volume').getAudioTracks()[0]);
+                            }
 
-                mediaRecorder.addEventListener('stop', ws.close.bind(ws));
+                            mediaRecorder = new MediaRecorder(mediaStream, {
+                                mimeType: 'video/webm;codecs=h264',
+                                videoBitsPerSecond : 3000000,
+                                audioBitsPerSecond: 128000
+                            });
 
-                mediaRecorder.start(1000);
+                            mediaRecorder.addEventListener('dataavailable', (e) => {
+                                ws.send(e.data);
+                            });
+
+                            mediaRecorder.addEventListener('stop', ws.close.bind(ws));
+
+                            mediaRecorder.start(500);
+                        })
+                        .catch(function(err){
+                            mediaRecorder = new MediaRecorder(mediaStream, {
+                                mimeType: 'video/webm;codecs=h264',
+                                videoBitsPerSecond : 3000000,
+                                audioBitsPerSecond: 128000
+                            });
+
+                            mediaRecorder.addEventListener('dataavailable', (e) => {
+                                ws.send(e.data);
+                            });
+
+                            mediaRecorder.addEventListener('stop', ws.close.bind(ws));
+
+                            mediaRecorder.start(500);
+                        });
+                    }
+                else{
+                    mediaRecorder = new MediaRecorder(mediaStream, {
+                        mimeType: 'video/webm;codecs=h264',
+                        videoBitsPerSecond : 3000000,
+                        audioBitsPerSecond: 128000
+                    });
+
+                    mediaRecorder.addEventListener('dataavailable', (e) => {
+                        ws.send(e.data);
+                    });
+
+                    mediaRecorder.addEventListener('stop', ws.close.bind(ws));
+
+                    mediaRecorder.start(500);
+                }
             });
 
             ws.addEventListener('close', (e) => {
@@ -86,19 +143,12 @@
                 $('#stop_live_btn').css('display', 'none');
                 $('#go_live_btn').prop('disabled', false);
                 $('#stop_live_btn').prop('disabled', true);
+
+                $('#mic-volume').prop('disabled', false);
             });
 
             $('#stop_live_btn').unbind('click');
             $('#stop_live_btn').click(function(){
-                mediaRecorder.stop();
-                $('#video-overlay').addClass('offline');
-                $('#video-overlay').removeClass('live');
-                $('#video-overlay').text('OFFLINE');
-
-                $('#go_live_btn').css('display', 'inline-block');
-                $('#stop_live_btn').css('display', 'none');
-                $('#go_live_btn').prop('disabled', false);
-                $('#stop_live_btn').prop('disabled', true);
                 ws.close();
             });
         });
@@ -106,12 +156,16 @@
         $('#settings-btn').click(function() {
             api.getSettings(function(err, res){
                 $('#stream-key').val(res.streamKey);
+                $('#resolution').val(res.resolution);
                 $('#settings-modal').modal('show');
             });
         });
 
         $('#submit-settings-btn').click(function(){
-            api.updateSettings({streamKey: $('#stream-key').val()}, function(err, res) {
+            api.updateSettings({
+                streamKey: $('#stream-key').val(),
+                resolution: $('#resolution').val()
+            }, function(err, res) {
             });
         });
 
@@ -129,5 +183,65 @@
                 eyeElmt.addClass('fa-eye-slash');
             }
         });
+
+        // Merge audio function adapted from https://paul.kinlan.me/screen-recorderrecording-microphone-and-the-desktop-audio-at-the-same-time/
+        const mergeAudioStreams = (desktopStream, voiceStream) => {
+            const context = new AudioContext();
+
+            // Create a couple of sources
+            const source1 = context.createMediaStreamSource(desktopStream);
+            const source2 = context.createMediaStreamSource(voiceStream);
+            const destination = context.createMediaStreamDestination();
+
+            const desktopGain = context.createGain();
+            const voiceGain = context.createGain();
+
+            desktopGain.gain.value = 0.7;
+            voiceGain.gain.value = $('#mic-volume').val();
+
+            source1.connect(desktopGain).connect(destination);
+            // Connect source2
+            source2.connect(voiceGain).connect(destination);
+
+            return destination.stream;
+        };
+
+        let adjustVolume = function(stream, id){
+            if (stream.getAudioTracks().length === 0){
+                return;
+            }
+
+            const context = new AudioContext();
+
+            const source = context.createMediaStreamSource(stream);
+            const destination = context.createMediaStreamDestination();
+
+            const gainNode = context.createGain();
+
+            gainNode.gain.value = $(id).val();
+
+            source.connect(gainNode).connect(destination);
+
+            return destination.stream;
+        };
+
+        let unmuteMic = function(){
+            $('#mic-btn').addClass('fa-microphone');
+            $('#mic-btn').removeClass('fa-microphone-slash');
+            $('#mic-volume').prop('disabled', false);
+
+            $('#mic-btn.fa-microphone').click(muteMic);
+        };
+
+        let muteMic = function(){
+            $('#mic-btn').addClass('fa-microphone-slash');
+            $('#mic-btn').removeClass('fa-microphone');
+            $('#mic-volume').prop('disabled', true);
+
+            $('#mic-btn.fa-microphone-slash').click(unmuteMic);
+        };
+
+        $('#mic-btn.fa-microphone-slash').click(unmuteMic);
+        $('#mic-btn.fa-microphone').click(muteMic);
     }
 }());

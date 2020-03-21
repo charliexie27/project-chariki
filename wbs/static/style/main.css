@@ -11,7 +11,7 @@ body {
     max-width: 1000px;
     margin: 20px auto auto auto;
     display: grid;
-    grid-template-rows: 700px 100px;
+    grid-template-rows: 700px 60px 80px;
     justify-items: center;
 }
 
@@ -76,13 +76,22 @@ body {
     margin-right: 7px;
 }
 
-#stream-key{
-    width: 500px;
+.row{
+    margin-bottom: 10px;
+    height: 30px;
 }
 
-#stream-key-label{
+#stream-key{
+    width: 500px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.settings-label{
     margin-bottom: 0;
     margin-right: 10px;
+    width: 90px;
+    text-align: right;
 }
 
 #view-stream-key{
@@ -96,4 +105,21 @@ body {
 
 #stop_live_btn{
     display: none;
+}
+
+#mic-btn{
+    color: white;
+    cursor: pointer;
+}
+
+#mic-btn:hover{
+    color: gray;
+}
+
+.volume-div{
+    margin: 10px;
+}
+
+.volume-slider{
+    width: 400px;
 }

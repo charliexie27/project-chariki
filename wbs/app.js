@@ -109,7 +109,8 @@ app.post('/signup/', function (req, res, next) {
         });
         let newUserSettings = new UserSettings({
            _id: req.body.username,
-           streamKey: ''
+           streamKey: '',
+           resolution: '1280x720'
         });
         newUser.save(function(err){
             if (err) return res.status(500).end(err);
@@ -174,10 +175,16 @@ app.get('/signout/', function (req, res, next) {
 // USER SETTINGS
 app.post('/settings/', isAuthenticated, function (req, res, next) {
     // extract data from HTTP request
-    if (!('streamKey' in req.body)) return res.status(400).end('stream key is missing');
-    UserSettings.updateOne({_id: req.user._id}, { streamKey: encryptStreamKey(req.body.streamKey) }, { upsert: true }, function(err, count){
+    let settings = {};
+    if ('streamKey' in req.body){
+        settings.streamKey = encryptStreamKey(req.body.streamKey);
+    }
+    if ('resolution' in req.body){
+        settings.resolution = req.body.resolution;
+    }
+    UserSettings.updateOne({_id: req.user._id}, settings , { upsert: true }, function(err, count){
         if (err) return res.status(500).end(err);
-        return res.json("User settings updated successfully.");
+        return res.json("User settings updated successfully for " + req.user._id + ".");
     });
 });
 
@@ -185,7 +192,9 @@ app.get('/settings/', isAuthenticated, function(req, res, next) {
     UserSettings.findOne({_id: req.user._id}, function(err, userSettings){
         if (err) return res.status(500).end(err);
         if (!userSettings) return res.status(404).end('User settings not found.');
-        userSettings.streamKey = decryptStreamKey(userSettings.streamKey);
+        if (userSettings.streamKey){
+            userSettings.streamKey = decryptStreamKey(userSettings.streamKey);
+        }
         return res.json(userSettings);
     });
 });
@@ -261,6 +270,10 @@ wss.on('connection', (ws, req) => {
 
                 '-framerate', '30',
 
+                '-ac', '2',
+
+                '-ar', '44100',
+
                 '-b:v', '3000k',
 
                 '-minrate', '3000k',
@@ -271,6 +284,8 @@ wss.on('connection', (ws, req) => {
                 '-c:v', 'copy',
 
                 '-preset', 'ultrafast',
+
+                '-acodec', 'aac',
 
                 '-threads', '0',
 

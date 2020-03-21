@@ -43,9 +43,16 @@
                 <div class="modal-body">
                     <div class="container-fluid">
                         <div class="row">
-                            <label data-error="wrong" for="stream-key" id="stream-key-label">Stream Key:</label>
+                            <label data-error="wrong" for="stream-key" id="stream-key-label" class="settings-label">Stream Key:</label>
                             <input type="password" id="stream-key" name="stream-key">
                             <i id="view-stream-key" class="fa fa-eye fa-lg"></i>
+                        </div>
+                        <div class="row">
+                            <label data-error="wrong" for="resolution" id="resolution-label" class="settings-label">Resolution:</label>
+                            <select id="resolution" name="resolution">
+                                <option value="1920x1080">1920x1080</option>
+                                <option value="1280x720" selected>1280x720</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -61,7 +68,7 @@
 
     <div id="main-content">
         <div id="video_content">
-            <video id="captured_video" autoplay></video>
+            <video id="captured_video" autoplay muted></video>
             <div id="video-overlay" class="offline">
                 OFFLINE
             </div>
@@ -71,6 +78,13 @@
             <button id="select_app_btn" class="btn btn-primary btn-sm">Capture Application</button>
             <button id="go_live_btn" class="btn btn-danger btn-sm" disabled>Go Live</button>
             <button id="stop_live_btn" class="btn btn-secondary btn-sm" disabled>Stop</button>
+        </div>
+
+        <div id="sound-options">
+            <div class="volume-div">
+                <a id="mic-btn" class="fa fa-microphone-slash"></a>
+                <input type="range" class="volume-slider" id="mic-volume" min="0" max="1" value="0.7" step="0.01" disabled>
+            </div>
         </div>
     </div>
 
