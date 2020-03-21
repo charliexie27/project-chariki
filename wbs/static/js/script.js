@@ -21,8 +21,8 @@
                     if (res.resolution){
                         let widthHeight = res.resolution.split('x');
                         displayMediaOptions.video = {
-                            width: widthHeight[0],
-                            height: widthHeight[1]
+                            width: parseInt(widthHeight[0]),
+                            height: parseInt(widthHeight[1])
                         }
                     }
 
