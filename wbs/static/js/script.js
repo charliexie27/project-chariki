@@ -93,10 +93,12 @@
                             });
 
                             mediaRecorder.addEventListener('dataavailable', (e) => {
-                                ws.send(e.data);
+                                if (ws.readyState !== WebSocket.CLOSED && ws.readyState !== WebSocket.CLOSING) {
+                                    ws.send(e.data);
+                                }
                             });
 
-                            mediaRecorder.addEventListener('stop', ws.close.bind(ws));
+                            mediaRecorder.addEventListener('stop', ws.close.bind(ws, 1000));
 
                             mediaRecorder.start(500);
                         })
@@ -108,10 +110,12 @@
                             });
 
                             mediaRecorder.addEventListener('dataavailable', (e) => {
-                                ws.send(e.data);
+                                if (ws.readyState !== WebSocket.CLOSED && ws.readyState !== WebSocket.CLOSING) {
+                                    ws.send(e.data);
+                                }
                             });
 
-                            mediaRecorder.addEventListener('stop', ws.close.bind(ws));
+                            mediaRecorder.addEventListener('stop', ws.close.bind(ws, 1000));
 
                             mediaRecorder.start(500);
                         });
@@ -124,10 +128,12 @@
                     });
 
                     mediaRecorder.addEventListener('dataavailable', (e) => {
-                        ws.send(e.data);
+                        if (ws.readyState !== WebSocket.CLOSED && ws.readyState !== WebSocket.CLOSING) {
+                            ws.send(e.data);
+                        }
                     });
 
-                    mediaRecorder.addEventListener('stop', ws.close.bind(ws));
+                    mediaRecorder.addEventListener('stop', ws.close.bind(ws, 1000));
 
                     mediaRecorder.start(500);
                 }
@@ -135,6 +141,7 @@
 
             ws.addEventListener('close', (e) => {
                 mediaRecorder.stop();
+
                 $('#video-overlay').addClass('offline');
                 $('#video-overlay').removeClass('live');
                 $('#video-overlay').text('OFFLINE');
@@ -149,7 +156,7 @@
 
             $('#stop_live_btn').unbind('click');
             $('#stop_live_btn').click(function(){
-                ws.close();
+                ws.close(1000);
             });
         });
 
