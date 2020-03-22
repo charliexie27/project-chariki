@@ -123,3 +123,7 @@ body {
 .volume-slider{
     width: 400px;
 }
+
+#cam-stop-btn{
+    display: none;
+}

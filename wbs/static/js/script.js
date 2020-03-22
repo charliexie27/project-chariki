@@ -9,6 +9,13 @@
 
         const capturedVideoElmt = document.getElementById('captured_video');
         let videoStream;
+        let camStream;
+        let combinedStream;
+
+        let parseResolution = function(resolutionString) {
+            let widthHeight = resolutionString.split('x');
+            return {width: parseInt(widthHeight[0]), height: parseInt(widthHeight[1])};
+        };
 
         $('#select_app_btn').click(function() {
             try {
@@ -18,16 +25,20 @@
                         audio: true
                     };
 
-                    if (res.resolution){
-                        let widthHeight = res.resolution.split('x');
-                        displayMediaOptions.video = {
-                            width: parseInt(widthHeight[0]),
-                            height: parseInt(widthHeight[1])
-                        }
-                    }
+                    let widthHeight = parseResolution(res.resolution);
+                    displayMediaOptions.video = {
+                        width: widthHeight.width,
+                        height: widthHeight.height
+                    };
 
-                    videoStream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
-                    capturedVideoElmt.srcObject = videoStream;
+                    videoStream = changeResolution(await navigator.mediaDevices.getDisplayMedia(displayMediaOptions), widthHeight.width, widthHeight.height);
+                    if (camStream){
+                        combinedStream = mergeVideoAndCam(camStream, widthHeight.width, widthHeight.height);
+                        capturedVideoElmt.srcObject = combinedStream;
+                    }
+                    else{
+                        capturedVideoElmt.srcObject = videoStream;
+                    }
                     $('#stop_app_btn').prop('disabled', false);
                     $('#go_live_btn').prop('disabled', false);
                 });
@@ -69,17 +80,39 @@
             $('#video-overlay').removeClass('offline');
             $('#video-overlay').text('LIVE');
 
+            // Hide capture application and webcam buttons
+            $('#select_app_btn').hide();
+            $('#select_app_btn').prop('disabled', true);
+
+            $('#cam-btn').hide();
+            $('#cam-stop-btn').hide();
+            $('#cam-btn').prop('disabled', true);
+            $('#cam-stop-btn').prop('disabled', true);
+
+            // Disable mic button and volume
+            $('#mic-btn.fa-microphone-slash').unbind('click');
+            $('#mic-btn.fa-microphone').unbind('click');
             $('#mic-volume').prop('disabled', true);
 
             ws.addEventListener('open', (e) => {
-                let mediaStream = videoStream.clone();
+                let mediaStream;
+
+                if (combinedStream) {
+                    mediaStream = combinedStream.clone();
+                }
+                else if (videoStream) {
+                    mediaStream = videoStream.clone();
+                }
+                else if (camStream) {
+                    mediaStream = camStream.clone();
+                }
 
                 if ($('#mic-btn').hasClass('fa-microphone')){
                     navigator.mediaDevices.getUserMedia({ audio: true, video: false })
                         .then(function(stream) {
-                            if (videoStream.getAudioTracks().length !== 0){
-                                let newMediaStream = mergeAudioStreams(videoStream, stream);
-                                newMediaStream.addTrack(videoStream.getVideoTracks()[0]);
+                            if (mediaStream.getAudioTracks().length !== 0){
+                                let newMediaStream = mergeAudioStreams(mediaStream, stream);
+                                newMediaStream.addTrack(mediaStream.getVideoTracks()[0]);
                                 mediaStream = newMediaStream.clone();
                             }
                             else{
@@ -151,6 +184,20 @@
                 $('#go_live_btn').prop('disabled', false);
                 $('#stop_live_btn').prop('disabled', true);
 
+                $('#select_app_btn').show();
+                $('#select_app_btn').prop('disabled', false);
+
+                if (camStream){
+                    $('#cam-stop-btn').show();
+                    $('#cam-stop-btn').prop('disabled', false);
+                }
+                else{
+                    $('#cam-btn').show();
+                    $('#cam-btn').prop('disabled', false);
+                }
+
+                $('#mic-btn.fa-microphone-slash').click(unmuteMic);
+                $('#mic-btn.fa-microphone').click(muteMic);
                 $('#mic-volume').prop('disabled', false);
             });
 
@@ -250,5 +297,90 @@
 
         $('#mic-btn.fa-microphone-slash').click(unmuteMic);
         $('#mic-btn.fa-microphone').click(muteMic);
+
+        let mergeVideoAndCam = function(camStream, width, height) {
+            let merger = new VideoStreamMerger({
+                width: width,
+                height: height,
+            });
+            merger.addStream(videoStream, {
+                x: 0,
+                y: 0,
+                width: merger.width,
+                height: merger.height,
+                mute: videoStream.getAudioTracks().length === 0
+            });
+
+            merger.addStream(camStream, {
+                x: merger.width - (merger.width * 0.3),
+                y: merger.height - (merger.height * 0.3),
+                width: merger.width * 0.3,
+                height: merger.height * 0.3,
+                mute: true
+            });
+
+            merger.start();
+
+            return merger.result;
+        };
+
+        let changeResolution = function(stream, width, height) {
+            let merger = new VideoStreamMerger({
+                width: width,
+                height: height,
+            });
+            merger.addStream(stream, {
+                x: 0,
+                y: 0,
+                width: merger.width,
+                height: merger.height,
+                mute: stream.getAudioTracks().length === 0
+            });
+
+            merger.start();
+
+            return merger.result;
+        };
+
+        $('#cam-btn').click(function() {
+           navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+               .then(function(stream) {
+                   camStream = stream;
+                   if (!videoStream){
+                       capturedVideoElmt.srcObject = camStream;
+                   }
+                   else{
+                       api.getSettings(function(err, res) {
+                           let widthHeight = parseResolution(res.resolution);
+                           combinedStream = mergeVideoAndCam(stream, widthHeight.width, widthHeight.height);
+                           capturedVideoElmt.srcObject = combinedStream;
+                       });
+                   }
+
+                   $('#cam-btn').prop('disabled', true);
+                   $('#cam-stop-btn').prop('disabled', false);
+                   $('#cam-btn').hide();
+                   $('#cam-stop-btn').show();
+
+                   $('#stop_app_btn').prop('disabled', false);
+                   $('#go_live_btn').prop('disabled', false);
+               });
+        });
+
+        $('#cam-stop-btn').click(function() {
+           camStream = null;
+           combinedStream = null;
+           if (videoStream){
+               capturedVideoElmt.srcObject = videoStream;
+           }
+           else{
+               capturedVideoElmt.srcObject = null;
+           }
+
+            $('#cam-btn').prop('disabled', false);
+            $('#cam-stop-btn').prop('disabled', true);
+            $('#cam-btn').show();
+            $('#cam-stop-btn').hide();
+        });
     }
 }());
