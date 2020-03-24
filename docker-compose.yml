@@ -28,7 +28,7 @@ services:
             - wbs-mongo
         volumes:
             - .:/usr/src/app/wbs
-            - node_modules:/usr/src/app/node_modules
+            - node_modules:/usr/src/app/wbs/node_modules
         depends_on:
             - wbs-mongo
         networks:
