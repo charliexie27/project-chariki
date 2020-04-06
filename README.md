@@ -43,7 +43,7 @@ WBS is an application that allows you to stream a live video feed to a streaming
 
 - Dealing with the video feeds from these multiple APIs (camera/microphone, images, text on-screen applications, etc.) and mixing them together into a single video feed will be a challenge.
 
-## Beta Installation Instructions
+## Installation Instructions
 
 1. Download FFmpeg from <https://www.ffmpeg.org/download.html>. If you're on Windows, extract the zip file, then add the bin folder to your PATH in environment variables. To test that it's installed correctly, just type 'ffmpeg' in the command line and see if the command is recognized. For Mac users, the simplest way is to install it through homebrew with `brew install ffmpeg`.
 
@@ -58,3 +58,95 @@ WBS is an application that allows you to stream a live video feed to a streaming
 6. Using another command line, start the app with `node app.js`. Access it in <https://localhost:3000>.
 
 7. Sign in, then hover over your username in the top right and click Account Settings to save your stream key. If certain features don't work, try using Google Chrome. If it still doesn't work, then it's a bug.
+
+## API Documentation
+### Authentication
+
+- description: Sign up
+- request: `POST /signup/`
+    - content-type: `application/json`
+    - body:
+      - username: (string) the username for the new account
+      - password: (string) the password for the new account
+- response: 200
+    - body: user 'username' signed up
+- response: 400
+    - body: username or password is missing
+- response: 409
+    - body: username 'username' already exists
+
+``` 
+$ curl -H "Content-Type: application/json"
+        -X POST -d '{"username":"alice","password":"alice"}'
+        -c cookie.txt
+        https://localhost:3000/signup/
+```
+
+- description: Sign in
+- request: `POST /signin/`
+    - content-type: `application/json`
+    - body:
+      - username: (string) the username for the new account
+      - password: (string) the password for the new account
+- response: 200
+    - body: user 'username' signed in
+- response: 400
+    - body: username or password is missing
+- response: 401
+    - body: Invalid username or password   
+
+``` 
+$ curl -H "Content-Type: application/json"
+        -X POST -d '{"username":"alice","password":"alice"}'
+        -c cookie.txt
+        https://localhost:3000/signin/
+```
+
+- description: Sign out
+- request: `GET /signout/`
+- response: 200
+    - redirect to / 
+
+``` 
+$ curl
+    -b cookie.txt
+    -c cookie.txt
+    https://localhost:3000/signout/
+```
+
+### User settings
+
+- description: Update user settings for logged in user.
+- request: `POST /settings/`
+    - content-type: `application/json`
+    - body:
+      - streamKey: (string) the stream key for Twitch
+      - resolution: (string) the resolution that the user will stream in. Default is 1280x720.
+- response: 200
+    - body: User settings updated successfully for 'username'.
+- response: 401
+    - body: access denied
+    
+``` 
+$ curl -X POST 
+       -H "Content-Type: application/json" 
+       -d '{"streamKey":"19fjthisistotallyarealkeyf","resolution":"1920x1080"}'
+       -b cookie.txt
+       https://localhost:3000/settings/
+```
+
+- description: Retrieve the settings of the authenticated user.
+- request: `GET /settings/`
+- response: 200
+    - content-type: `application/json`
+    - body:
+      - streamKey: (string) the stream key for Twitch
+      - resolution: (string) the resolution that the user will stream in.
+- response: 401
+    - body: access denied
+- response: 404
+    - body: User settings not found.
+ 
+``` 
+$ curl -b cookie.txt https://localhost:3000/settings/
+``` 

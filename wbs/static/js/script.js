@@ -382,5 +382,5 @@
             $('#cam-btn').show();
             $('#cam-stop-btn').hide();
         });
-    }
+    };
 }());
