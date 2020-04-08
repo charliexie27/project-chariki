@@ -199,19 +199,19 @@ app.get('/settings/', isAuthenticated, function(req, res, next) {
     });
 });
 
-const http = require('http');
+const https = require('https');
 const PORT = 3000;
 
-// let privateKey = fs.readFileSync( 'server.key' );
-// let certificate = fs.readFileSync( 'server.crt' );
-// let config = {
-//     key: privateKey,
-//     cert: certificate
-// };
+let privateKey = fs.readFileSync( 'server.key' );
+let certificate = fs.readFileSync( 'server.crt' );
+let config = {
+    key: privateKey,
+    cert: certificate
+};
 
-const server = http.createServer(app).listen(PORT, function (err) {
+const server = https.createServer(config, app).listen(PORT, function (err) {
     if (err) console.log(err);
-    else console.log("HTTP server on http://localhost:%s", PORT);
+    else console.log("HTTPS server on https://localhost:%s", PORT);
 });
 
 const wss = new WebSocketServer({
