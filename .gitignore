@@ -12,3 +12,5 @@ server.key
 
 # Others
 .jshintrc
+data
+.vscode
