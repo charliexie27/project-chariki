@@ -63,7 +63,8 @@
             let mediaRecorder;
 
             let ws = new WebSocket(
-                window.location.protocol.replace('https', 'wss') + '//' + // http: => ws:, https: -> wss:
+                //window.location.protocol.replace('https', 'wss') + '//' + // http: => ws:, https: -> wss:
+		window.location.protocol.replace('http', 'ws') + '//' +
                 window.location.host +
                 '/rtmp/' +
                 encodeURIComponent("rtmp://live-yto.twitch.tv/app/$STREAM_KEY$")
