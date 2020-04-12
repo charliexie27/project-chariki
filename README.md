@@ -51,6 +51,8 @@ WBS is an application that allows you to stream a live video feed to a streaming
 
 ## Installation Instructions
 
+If you decide to run it from the source, clone the repo and follow the instructions below:
+
 1. Download FFmpeg from <https://www.ffmpeg.org/download.html>. If you're on Windows, extract the zip file, then add the bin folder to your PATH in environment variables. To test that it's installed correctly, just type 'ffmpeg' in the command line and see if the command is recognized. For Mac users, the simplest way is to install it through homebrew with `brew install ffmpeg`.
 
 2. Install MongoDB using the instructions in <https://www.freecodecamp.org/news/learn-mongodb-a4ce205e7739/>. Same as step 1, if you're on Windows, add the bin folder to your PATH in environment variables. For Mac users, the simplest way is (again) to install it through homebrew. First tap the Mongodb homebrew tap with `brew tap mongodb/brew` then install with `brew install mongodb-community@4.2`.
