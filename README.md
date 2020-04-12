@@ -10,7 +10,7 @@ WBS is an application that allows you to stream a live video feed to a streaming
 ## Various URLs
 
 - [Web Broadcaster Software](https://webbroadcastersoftware.me/)
-- [Video Demonstration](youtube.com)
+- [Video Demonstration](https://youtu.be/lU1orrxky7U)
 - [API Documentation](https://github.com/UTSCC09/project-chariki/tree/master/doc)
 
 ## Technology
